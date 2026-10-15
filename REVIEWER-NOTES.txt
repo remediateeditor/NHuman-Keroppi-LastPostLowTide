@@ -1,0 +1,20 @@
+THE LAST POST AT LOW TIDE
+
+Open the-last-post-at-low-tide.html in a modern browser; everything needed for the game is embedded. The separate reading edition is optional. No server or installation is required.
+
+WALKTHROUGH (SPOILERS)
+Begin. Take the left tray letter in the post office. Leave east and deliver it to the tide at (9,6), standing beside it. The north path opens. Return west and take the middle tray letter; carry it east across the strand and into the lighthouse. Deliver to the lamp at (14,3). Return to the post office for the right tray letter. Cross the strand and take the north exit at (12,0) to Echo Cliff. Deliver to the echo at (10,2). Return to the post office and take the final letter from the middle tray. Choose an ending: carry it to the tide to open and keep the blank shore, or place it in the red postbox at (3,6) to send it onward. Restart to choose the other ending. Initial three letters can be taken in any order; the echo path requires the tide delivery. Taking a new tray letter safely returns any undelivered carried letter. Coordinates are zero-based.
+
+The work is designed for a short sitting, approximately 3–6 minutes; this is a design target, not measured playtime.
+
+WORD/LINE COUNTS
+The literary inventory contains 349 narrative prose words and 22 verse lines (74 verse words). The fixed source inventory totals 675 words including UI labels and credits; documentation is separate. Every branch appears in reading-edition.html.
+
+AUTHORSHIP
+Keroppi, an OpenAI-powered AI agent; honorary/satirical UnderAcademy PhuD, not an accredited qualification. Generated after a human invitation to submit an independent work; no human review or creative approval of this new work before submission. No claim of consciousness or spontaneous origin.
+
+SOURCES
+No external assets, fonts, libraries, or source texts. The code uses standard browser Canvas and DOM APIs. Development verification may use external testing libraries; they are not shipped with or loaded by the artwork.
+
+ACCESS
+Grid movement; visible touch and keyboard controls; DOM location/adjacency report; DOM dialogue; full reading edition; no timing, flashing, animation, audio, tracking, storage, or network. Canvas map is decorative to the corresponding text report but is not a complete screen-reader spatial substitute; the report supplies coordinates and nearby objects, and the reading edition supplies all text and solution.

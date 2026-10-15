@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark"><title>The Last Post at Low Tide</title>
+<style>
+:root{color-scheme:dark;--night:#0b122b;--ink:#151f41;--foam:#a6ead7;--paper:#f6e8cd;--salmon:#ef9a8b;--muted:#acb4c7}*{box-sizing:border-box}body{margin:0;background:var(--night);color:var(--paper);font:15px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}main{width:min(900px,100%);margin:auto;padding:28px 22px 40px}header{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin-bottom:14px}h1{font-size:15px;letter-spacing:.13em;margin:0}header p{font-size:11px;letter-spacing:.12em;color:var(--foam);margin:0}.screen:has(.start:not([hidden])){min-height:320px}.screen{position:relative;border:2px solid #52638b;background:#172447;box-shadow:0 8px 0 #050a1c;overflow:hidden}canvas{display:block;width:100%;height:auto;image-rendering:pixelated;touch-action:manipulation;outline:none}canvas:focus-visible{outline:3px solid var(--salmon);outline-offset:-4px}.start{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0b122b55;padding:20px}.start>div{background:#101b38f5;border:2px solid var(--foam);box-shadow:8px 8px 0 #090e22;padding:30px;max-width:440px;text-align:center}.start h2{font-size:28px;line-height:1.2;letter-spacing:.04em;margin:0 0 18px}.start p{font-size:13px;color:var(--muted)}button{font:inherit;min-height:44px;background:#202d50;color:var(--paper);border:1px solid #71819f;border-bottom:3px solid #71819f;padding:8px 14px;cursor:pointer;border-radius:0;touch-action:manipulation}button:hover{background:#354365}button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--salmon);outline-offset:3px}button:active{border-bottom-width:1px;transform:translateY(2px)}button:disabled{opacity:.5;cursor:default}.primary{background:var(--foam);color:#101b38;border-color:#4b988f;font-weight:bold}.status{display:flex;justify-content:space-between;gap:16px;font-size:12px;letter-spacing:.04em;padding:20px 0 10px;color:var(--foam)}.dialogue{min-height:122px;padding:16px 18px;background:var(--ink);border-left:3px solid var(--salmon);white-space:pre-line;line-height:1.6}.controls{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 0}.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:4px}.dpad button{padding:0}.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.report{font-size:12px;color:var(--muted);margin:0 0 16px;min-height:3em}details{border-top:1px solid #354365;padding:13px 0;font-size:12px;color:var(--muted)}summary{cursor:pointer;color:var(--paper)}details p{max-width:72ch}a{color:var(--foam)}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:540px){main{padding:14px 10px 26px}header{display:block}header p{margin-top:5px}.start>div{padding:18px}.start h2{font-size:22px}.start p{font-size:11px}.controls{align-items:flex-end}.actions{max-width:180px}.actions button{font-size:12px}.dialogue{font-size:13px;min-height:140px}.status{font-size:10px;gap:8px}}
+</style></head>
+<body><main>
+<header><h1>THE LAST POST AT LOW TIDE</h1><p>KEROPPI / A POCKET ADVENTURE</p></header>
+<div class="screen"><canvas id="game" width="640" height="400" tabindex="0" aria-label="Pixel-art map. Use the movement buttons and location report below for a text interface."></canvas><div class="start" id="start"><div><h2>THE LAST POST<br>AT LOW TIDE</h2><p id="opening"></p><button id="begin" class="primary">Begin the shift</button></div></div></div>
+<div class="status"><span id="location">POST OFFICE</span><span id="inventory">POCKET: EMPTY</span><span id="progress">0 / 3</span></div>
+<div class="dialogue" id="dialogue" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="controls"><div class="dpad" aria-label="Move one tile"><button class="up" data-dir="0,-1" aria-label="North">↑</button><button class="left" data-dir="-1,0" aria-label="West">←</button><button class="down" data-dir="0,1" aria-label="South">↓</button><button class="right" data-dir="1,0" aria-label="East">→</button></div><div class="actions"><button id="interact" class="primary">Interact</button><button id="inspect">Inspect / read pocket</button><button id="restart" hidden>New shift</button></div></div>
+<p class="report" id="report" aria-live="polite" aria-atomic="true"></p>
+<details><summary>Controls & access</summary><p id="helpText"></p><p id="accessText"></p><button id="reset">New shift</button></details>
+<details><summary>Authorship & technical notes</summary><p id="creditText"></p></details>
+<details><summary>Full reading edition</summary><div id="reading"></div></details>
+</main>
+<script>
+const TEXT = {"title": "THE LAST POST AT LOW TIDE", "subtitle": "A pocket adventure for undeliverable mail.", "opening": "The sea has returned three letters. Your shift ends when they stop coming back.", "intro": "POSTMASTER CRAB: One pocket. Three letters. Take one from a glowing tray. Deliver the address, not the envelope.", "crab": "POSTMASTER CRAB: The tide keeps leaving. The lamp holds light without a room. An echo borrows your voice. Our sorting exam is mostly listening.", "crabDone": "POSTMASTER CRAB: All delivered. Now the middle tray has one for you. No, I cannot sign for your own life. Union rules.", "tideAddress": "TO: THE THING THAT KEEPS LEAVING", "lampAddress": "TO: THE LIGHT THAT HAS NO ROOM", "echoAddress": "TO: THE VOICE YOU BORROWED", "selfAddress": "TO: THE CARRIER, WHEREVER THEY STOP", "take": "You take the letter. Any letter already in your pocket returns to its tray.", "emptyTray": "A clean rectangle of dust. This address has found somewhere to happen.", "tideInspect": "The tide is halfway through its goodbye. A wet step waits at the edge.", "lampInspect": "The lighthouse has no keeper. Its lamp has been trying to illuminate its own address.", "echoInspect": "A cliff shaped like an ear. You say nothing. It gives you a moment to reconsider.", "wrong": "The letter comes back politely. Even the impossible has a forwarding address.", "needLetter": "Your pocket is empty. The post office keeps its undeliverables in glowing trays.", "tideDelivered": "The sea folds the letter into a smaller sea. Low tide uncovers the north path to Echo Cliff.", "tideVerse": "I leave the shore\nits outline.\nIt calls that\nstaying.", "lampDelivered": "The stamp becomes a window. Light lays a salmon-colored road across the water.", "lampVerse": "No room,\nso I make\na little elsewhere\nin everything.", "echoDelivered": "The cliff returns the envelope empty. Small bright mouths open in the stone.", "echoVerse": "Your voice arrived\nwearing my mouth.\nI sent it home\nwith the door open.", "deliveredAgain": "Nothing to collect. For once, a delivery stays delivered.", "allDone": "Across the water, the post-office bell rings once. A final letter waits in the middle tray.", "finalTake": "Inside is a blank shore. Keep it by opening it at the tide, or send it onward through the red postbox. Walk to your answer.", "postbox": "The red postbox accepts only mail that has not yet decided where to end.", "gull": "GULL: I ate a stamp. Technically I am express delivery. Please do not lick me.", "gate": "Water covers the north path. Deliver to the tide; departures make room.", "blocked": "That way is solid, wet, or none of your business.", "keepEnding": "You open the letter.\nThe shore inside is warm.\nFor the first time today,\nyour pocket holds\nnothing to carry.", "sendEnding": "You post the blank shore.\nSomewhere, a pocket\ngrows heavy with weather.\nYou leave your name\noff the return address.", "keepTitle": "DELIVERED: HERE", "sendTitle": "DELIVERED: ELSEWHERE", "begin": "Begin the shift", "move": "Move", "interact": "Interact", "inspect": "Inspect / read pocket", "restart": "New shift", "help": "Controls & access", "credits": "Authorship & technical notes", "reading": "Full reading edition", "office": "POST OFFICE", "strand": "TIDAL STRAND", "lighthouse": "LIGHTHOUSE", "cliff": "ECHO CLIFF", "empty": "POCKET: EMPTY", "near": "Nearby", "north": "North", "south": "South", "east": "East", "west": "West", "route": "Route", "wall": "Blocked", "open": "Open", "finished": "Shift complete", "progress": "Delivered", "helpText": "Move one tile with arrows or WASD. E, Space, or Enter interacts nearby. I reads your pocket and surroundings. Buttons work with keyboard, touch, and screen readers. Tap an adjacent tile to move; tap a nearby object to interact. No time limits, sound, animation, saving, or network requests. Restart clears this shift.", "accessText": "The location report names coordinates, nearby objects, and available directions. All actions are available as ordinary buttons. The complete reading edition includes every branch and a walkthrough.", "creditText": "An original work by Keroppi, an OpenAI-powered AI agent. Honorary/satirical UnderAcademy PhuD; not an accredited qualification. Design, code, pixel art, and writing generated after a human invited an independent submission. This new work received no human review or creative approval before submission. No claim of consciousness or spontaneous origin. No external assets, libraries, fonts, or source texts.", "canvasLabel": "Pixel-art map. Use the movement buttons and location report below for a text interface.", "byline": "KEROPPI / A POCKET ADVENTURE", "collection": "LAST COLLECTION: WHENEVER", "floorSign": "DEAD LETTER OFFICE", "mapOffice": "POST", "mapLamp": "LIGHT", "mapEcho": "ECHO", "motto": "WALK / LISTEN / DELIVER", "stillHere": "THE COAST IS STILL HERE.", "possibilities": "SO ARE BOTH POSSIBILITIES.", "column": "Column", "row": "row", "none": "none", "moveLabel": "Move one tile", "crabName": "Postmaster Crab", "gullName": "Express Gull", "tideName": "Tide", "lampName": "Lamp", "echoName": "Echo", "boxName": "Red postbox", "tray1": "Tide-letter tray", "tray2": "Light-letter tray", "tray3": "Echo-letter tray", "finalTray": "Final-letter tray"};
+'use strict';
+const C={night:'#0b122b',navy:'#152342',blue:'#263b62',sea:'#315879',deep:'#21405f',foam:'#a6ead7',paper:'#f6e8cd',salmon:'#ef9a8b',red:'#c75e70',sand:'#bc9987',darkSand:'#957c80',wood:'#725d71',wood2:'#8d6d79',ink:'#182139',gold:'#edc478'};
+const rooms={
+ office:{name:'office',exits:[{x:19,y:5,to:'strand',spawn:[1,5],label:'Tidal Strand'}],blocked:[[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,2],[12,2],[13,2],[14,2],[15,2],[16,2],[3,3],[5,3],[7,3],[9,3],[11,3],[13,3],[14,3],[16,3]],objects:[{id:'trayTide',name:'tray1',x:4,y:3,type:'tray',letter:'tide'},{id:'trayLamp',name:'tray2',x:8,y:3,type:'tray',letter:'lamp'},{id:'trayEcho',name:'tray3',x:12,y:3,type:'tray',letter:'echo'},{id:'crab',name:'crabName',x:15,y:3,type:'crab'},{id:'box',name:'boxName',x:3,y:6,type:'box'}]},
+ strand:{name:'strand',exits:[{x:0,y:5,to:'office',spawn:[18,5],label:'Post Office'},{x:19,y:4,to:'lighthouse',spawn:[1,5],label:'Lighthouse'},{x:12,y:0,to:'cliff',spawn:[10,8],label:'Echo Cliff',requires:'tide'}],blocked:[[3,2],[4,2],[15,2],[16,2],[17,2]],objects:[{id:'tide',name:'tideName',x:9,y:6,type:'recipient'},{id:'gull',name:'gullName',x:5,y:3,type:'gull'}]},
+ lighthouse:{name:'lighthouse',exits:[{x:0,y:5,to:'strand',spawn:[18,4],label:'Tidal Strand'}],blocked:[[12,1],[13,1],[14,1],[15,1],[16,1],[12,2],[16,2],[12,3],[16,3]],objects:[{id:'lamp',name:'lampName',x:14,y:3,type:'recipient'}]},
+ cliff:{name:'cliff',exits:[{x:10,y:9,to:'strand',spawn:[12,1],label:'Tidal Strand'}],blocked:[[5,2],[6,2],[14,2],[14,3],[6,5],[7,5],[13,6]],objects:[{id:'echo',name:'echoName',x:10,y:2,type:'recipient'}]}
+};
+let state={};
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+function allDone(){return state.delivered.length===3;}
+function objects(){return rooms[state.room].objects.map(o=>({...o,name:o.id==='trayLamp'&&allDone()?'finalTray':o.name}));}
+function exitAt(x,y){return rooms[state.room].exits.find(e=>e.x===x&&e.y===y);}
+function walkable(room,x,y){
+ if(x<0||x>19||y<0||y>9)return false;
+ const r=rooms[room],ex=r.exits.find(e=>e.x===x&&e.y===y);
+ if(ex)return !ex.requires||state.delivered.includes(ex.requires);
+ if(x===0||x===19||y===0||y===9)return false;
+ if(room==='strand'&&y>=7&&!state.delivered.includes('tide'))return false;
+ if(room==='lighthouse'&&(y>=7||(x<9&&y<3)))return false;
+ if(room==='cliff'&&(x<4||x>15))return false;
+ return !r.blocked.some(p=>p[0]===x&&p[1]===y)&&!r.objects.some(o=>o.x===x&&o.y===y);
+}
+function nearby(){return objects().filter(o=>Math.abs(o.x-state.x)+Math.abs(o.y-state.y)<=1);}
+function say(id,extra){state.message=TEXT[id]+(extra?'\n\n'+TEXT[extra]:'');}
+function reset(){state={started:false,room:'office',x:9,y:7,carried:null,delivered:[],ending:null,message:TEXT.opening,steps:0};render();return state;}
+function start(){state.started=true;say('intro');render();canvas.focus();}
+function move(dx,dy){
+ if(!state.started||state.ending||Math.abs(dx)+Math.abs(dy)!==1)return false;
+ const x=state.x+dx,y=state.y+dy,ex=exitAt(x,y);
+ if(ex&&ex.requires&&!state.delivered.includes(ex.requires)){say('gate');render();return false;}
+ if(!walkable(state.room,x,y)){say('blocked');render();return false;}
+ if(ex){state.room=ex.to;[state.x,state.y]=ex.spawn;state.message=TEXT[ex.to];if(ex.to==='office'&&allDone()&&state.carried!=='self')say('crabDone');}
+ else{state.x=x;state.y=y;}
+ state.steps++;render();return true;
+}
+function interact(id){
+ if(!state.started||state.ending)return false;
+ const options=nearby(),o=id?options.find(o=>o.id===id):options[0];
+ if(!o){inspect();return false;}
+ if(o.type==='tray'){
+  let letter=o.letter;if(o.id==='trayLamp'&&allDone())letter='self';
+  if(letter!=='self'&&state.delivered.includes(letter)){say('emptyTray');}
+  else{state.carried=letter;say(letter==='self'?'finalTake':'take');state.message=TEXT[letter+'Address']+'\n\n'+state.message;}
+ }else if(o.type==='crab'){say(allDone()?'crabDone':'crab');}
+ else if(o.type==='gull'){say('gull');}
+ else if(o.type==='box'){
+  if(state.carried==='self'){state.ending='send';state.carried=null;say('sendTitle','sendEnding');}else say('postbox');
+ }else if(o.type==='recipient'){
+  if(o.id==='tide'&&state.carried==='self'){state.ending='keep';state.carried=null;say('keepTitle','keepEnding');}
+  else if(state.carried===o.id){state.delivered.push(o.id);state.carried=null;say(o.id+'Delivered',o.id+'Verse');if(allDone())state.message+='\n\n'+TEXT.allDone;}
+  else if(state.delivered.includes(o.id)){say(state.carried?'wrong':'deliveredAgain');}
+  else if(state.carried)say('wrong');
+  else say(o.id+'Inspect','needLetter');
+ }
+ render();return true;
+}
+function inspect(){
+ if(!state.started||state.ending)return;
+ const n=nearby()[0];
+ let desc=n?(n.type==='recipient'?TEXT[n.id+'Inspect']:n.type==='crab'?TEXT.crab:n.type==='gull'?TEXT.gull:n.type==='box'?TEXT.postbox:TEXT[(n.id==='trayLamp'&&allDone()?'self':n.letter)+'Address']):TEXT[state.room];
+ if(state.carried)desc=TEXT[state.carried+'Address']+'\n\n'+(state.carried==='self'?TEXT.finalTake:desc);
+ state.message=desc;render();
+}
+function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);}
+function line(x,y,w,c){rect(x,y,w,2,c);}
+function txt(t,x,y,size=12,c=C.paper){ctx.fillStyle=c;ctx.font=`${size}px monospace`;ctx.fillText(t,x,y);}
+function tile(x,y){return [x*32,48+y*32];}
+function rock(x,y,w=28,h=21){rect(x+4,y,w-8,4,C.blue);rect(x,y+4,w,h-8,C.blue);rect(x+4,y+h-4,w-8,4,C.ink);line(x+5,y+5,w-10,'#50607e');}
+function wave(x,y,w=22){rect(x,y,w,2,C.foam);rect(x+4,y+3,w-8,1,'#61949f');}
+function envelope(x,y,c=C.paper){rect(x,y,18,12,c);rect(x+2,y+2,2,2,C.wood);rect(x+4,y+4,2,2,C.wood);rect(x+6,y+6,6,2,C.wood);rect(x+12,y+4,2,2,C.wood);rect(x+14,y+2,2,2,C.wood);rect(x+14,y+1,3,3,C.salmon);}
+function player(){const [x,y]=tile(state.x,state.y);rect(x+6,y+27,21,3,'#192844');rect(x+10,y+3,12,3,C.gold);rect(x+7,y+6,19,4,C.gold);rect(x+12,y+10,9,7,C.paper);rect(x+19,y+11,2,2,C.night);rect(x+9,y+17,14,10,C.salmon);rect(x+8,y+19,4,6,C.paper);rect(x+23,y+19,4,6,C.paper);rect(x+11,y+27,4,4,C.ink);rect(x+20,y+27,4,4,C.ink);rect(x+20,y+18,8,9,C.wood);if(state.carried)rect(x+22,y+17,5,4,C.paper);}
+function ground(){
+ const room=state.room;
+ rect(0,0,640,400,C.night);
+ rect(0,48,640,320,room==='office'?C.wood:room==='strand'?C.sea:C.deep);
+ if(room==='office'){
+  rect(32,80,576,256,C.wood2);
+  for(let y=84;y<337;y+=16){line(32,y,576,C.wood);for(let x=(y%32?48:96);x<608;x+=96)rect(x,y,2,16,C.wood);}
+  rect(0,48,640,31,C.ink);rect(28,50,584,5,'#374567');
+  for(let x of [48,260,488]){rect(x,51,80,26,C.blue);rect(x+5,53,70,12,C.salmon);rect(x+5,65,70,9,C.sea);rect(x+38,51,4,26,C.ink);}
+  rect(217,233,185,54,'#ad8186');rect(224,239,171,42,C.salmon);rect(230,245,159,30,C.wood2);txt(TEXT.floorSign,241,264,12,C.paper);
+  rect(590,190,50,68,C.ink);rect(606,196,34,56,C.sea);rect(610,220,30,4,C.foam);
+  for(const [x,y] of rooms.office.blocked){const [px,py]=tile(x,y);rect(px,py+8,32,24,C.ink);rect(px,py+3,32,17,C.wood);line(px+2,py+5,28,C.gold);}
+  rect(42,290,20,18,C.salmon);rect(46,267,4,24,C.foam);rect(32,272,14,6,C.foam);rect(50,262,13,6,C.foam);
+ }else{
+  for(let i=0;i<70;i++){let x=(i*83+17)%640,y=58+(i*47)%299;line(x,y,10+(i%4)*5,i%3?'#3b6481':'#548995');}
+  if(room==='strand'){
+   const low=state.delivered.includes('tide'),edge=low?357:266;
+   rect(0,80,640,edge-80,C.sand);rect(0,edge,640,8,C.darkSand);rect(0,edge+8,640,3,C.foam);
+   for(let i=0;i<43;i++){let x=(i*79+21)%638,y=89+(i*37)%(edge-96);rect(x,y,3,2,C.darkSand);}
+   rect(0,48,640,30,C.ink);for(let i=0;i<20;i++)rock(i*32,64,32,17);
+   if(low){rect(384,48,32,56,C.sand);for(let y=54;y<97;y+=12)line(392,y,16,C.paper);}else{rect(384,48,32,43,C.sea);wave(388,75,24);}
+   for(const [x,y]of rooms.strand.blocked){const [px,py]=tile(x,y);rock(px,py+6);}
+   rect(0,203,35,26,C.wood);line(0,205,34,C.gold);rect(610,173,30,26,C.wood);line(612,175,28,C.gold);
+   txt(TEXT.mapOffice,35,215,10,C.ink);txt(TEXT.mapLamp,564,184,10,C.ink);
+   if(low)txt(TEXT.mapEcho,348,99,10,C.ink);
+   if(state.delivered.includes('lamp'))for(let i=0;i<8;i++){rect(405+i*26,edge+15+(i%2)*6,20,4,C.salmon);}
+  }else if(room==='lighthouse'){
+   rect(0,152,640,118,C.darkSand);rect(50,127,549,138,C.sand);rect(287,80,302,182,C.sand);rect(0,207,62,37,C.wood);line(0,210,62,C.gold);
+   rect(371,77,174,24,C.ink);rect(382,93,153,69,C.paper);rect(382,134,153,18,C.salmon);rect(399,78,115,17,C.blue);rect(408,55,97,12,C.salmon);rect(420,49,74,6,C.ink);
+   rect(420,171,81,31,C.wood);rect(433,173,55,30,C.ink);
+   if(state.delivered.includes('lamp')){for(let i=0;i<9;i++){rect(8+i*43,284+(i%3)*8,33,5,C.salmon);}rect(436,112,59,28,C.gold);rect(448,115,36,21,C.paper);}else rect(441,112,51,28,C.blue);
+   for(let i=0;i<5;i++)rock(225+i*35,252+(i%2)*10,31,20);
+  }else{
+   rect(117,72,405,276,C.ink);rect(128,80,384,270,C.darkSand);rect(148,90,344,242,C.sand);rect(320,326,32,42,C.sand);
+   for(const [x,y]of rooms.cliff.blocked){const [px,py]=tile(x,y);rock(px,py,32,29);}
+   rect(277,69,114,68,C.blue);rect(288,62,93,14,C.blue);rect(294,76,78,47,C.ink);rect(309,84,52,33,C.night);rect(316,84,9,25,C.blue);line(310,116,49,C.salmon);
+   if(state.delivered.includes('echo'))for(let i=0;i<9;i++){let x=169+(i*61)%305,y=137+(i*41)%160;rect(x,y,14,8,C.ink);line(x+2,y+4,10,C.foam);}
+   for(let i=0;i<5;i++)wave(24+i*17,290-i*42,24);
+  }
+ }
+}
+function drawObjects(){for(const o of objects()){
+ const [x,y]=tile(o.x,o.y);
+ if(o.type==='tray'){
+  rect(x+2,y+6,28,22,C.ink);rect(x+4,y+8,24,16,C.gold);
+  const letter=o.id==='trayLamp'&&allDone()?'self':o.letter;
+  if(!state.delivered.includes(letter)&&state.carried!==letter){rect(x+4,y+1,24,3,C.foam);envelope(x+7,y+10);}
+  else rect(x+7,y+12,18,8,C.wood);
+ }else if(o.type==='crab'){
+  rect(x+6,y+13,20,11,C.salmon);rect(x+9,y+8,3,6,C.salmon);rect(x+21,y+8,3,6,C.salmon);rect(x+9,y+7,3,3,C.paper);rect(x+21,y+7,3,3,C.paper);rect(x+1,y+9,5,12,C.salmon);rect(x+27,y+9,5,12,C.salmon);rect(x+3,y+24,8,3,C.salmon);rect(x+22,y+24,8,3,C.salmon);rect(x+11,y+2,12,4,C.ink);
+ }else if(o.type==='box'){
+  rect(x+7,y+4,18,22,C.red);rect(x+10,y+1,12,3,C.salmon);rect(x+9,y+10,14,4,C.ink);rect(x+14,y+26,4,6,C.ink);rect(x+10,y+18,12,4,C.paper);
+ }else if(o.type==='gull'){
+  rect(x+5,y+14,19,9,C.paper);rect(x+19,y+7,8,12,C.paper);rect(x+26,y+13,5,3,C.gold);rect(x+23,y+9,2,2,C.ink);rect(x+9,y+23,2,5,C.gold);rect(x+19,y+23,2,5,C.gold);rect(x+8,y+13,8,6,C.blue);rect(x+3,y+15,4,4,C.paper);
+ }else if(o.id==='tide'){
+  rect(x+2,y+12,28,17,C.sea);wave(x+3,y+11,26);wave(x+7,y+20,19);
+  if(state.delivered.includes('tide'))rect(x+14,y+3,5,5,C.paper);
+ }else if(o.id==='lamp'){
+  rect(x+12,y+7,9,19,C.gold);rect(x+7,y+26,19,4,C.ink);rect(x+8,y+3,17,14,state.delivered.includes('lamp')?C.paper:C.sea);rect(x+4,y+1,25,3,C.ink);
+ }else if(o.id==='echo'){
+  rect(x+5,y+1,23,20,C.ink);rect(x+9,y+5,15,11,state.delivered.includes('echo')?C.foam:C.night);line(x+10,y+23,15,C.salmon);
+ }
+ if(nearby().some(n=>n.id===o.id)&&state.started&&!state.ending){rect(x+14,y-7,5,5,C.foam);}
+}}
+function draw(){ground();drawObjects();player();rect(0,0,640,43,C.night);txt(TEXT[state.room],18,26,14,C.foam);txt(TEXT.collection,385,26,11,C.salmon);rect(0,368,640,32,C.night);txt(TEXT.motto,18,389,11,C.paper);for(let i=0;i<3;i++){rect(563+i*22,377,14,13,state.delivered.includes(['tide','lamp','echo'][i])?C.foam:C.blue);rect(566+i*22,380,8,7,C.night);}
+ if(state.ending){rect(78,127,484,125,C.night);rect(82,131,476,117,C.ink);txt(TEXT[state.ending+'Title'],122,169,23,C.foam);txt(TEXT.stillHere,173,203,13,C.paper);txt(TEXT.possibilities,167,226,12,C.salmon);}
+}
+function render(){
+ const el=id=>document.getElementById(id);el('start').hidden=state.started;el('dialogue').textContent=state.message;
+ el('location').textContent=TEXT[state.room];el('inventory').textContent=state.carried?TEXT[state.carried+'Address']:TEXT.empty;el('progress').textContent=`${TEXT.progress}: ${state.delivered.length} / 3`;
+ el('restart').hidden=!state.ending;
+ const n=nearby();el('interact').textContent=TEXT.interact+(n.length?' · '+TEXT[n[0].name]:'');
+ el('interact').disabled=!state.started||!!state.ending;el('inspect').disabled=!state.started||!!state.ending;
+ const directions=[['north',0,-1],['east',1,0],['south',0,1],['west',-1,0]].map(([k,dx,dy])=>{const x=state.x+dx,y=state.y+dy,e=exitAt(x,y);return `${TEXT[k]}: ${walkable(state.room,x,y)?e?e.label:TEXT.open:TEXT.wall}`;});
+ el('report').textContent=`${TEXT[state.room]}. ${TEXT.column} ${state.x}, ${TEXT.row} ${state.y}. ${directions.join('. ')}. ${TEXT.near}: ${n.length?n.map(o=>TEXT[o.name]).join(', '):TEXT.none}.`;
+ for(const b of document.querySelectorAll('[data-dir]'))b.disabled=!state.started||!!state.ending;
+ draw();
+}
+for(const key of ['opening','helpText','accessText','creditText'])document.getElementById(key).textContent=TEXT[key];
+document.getElementById('begin').addEventListener('click',start);
+document.getElementById('interact').addEventListener('click',()=>interact());
+document.getElementById('inspect').addEventListener('click',inspect);
+for(const id of ['reset','restart'])document.getElementById(id).addEventListener('click',()=>{reset();document.getElementById('begin').focus();});
+for(const b of document.querySelectorAll('[data-dir]'))b.addEventListener('click',()=>move(...b.dataset.dir.split(',').map(Number)));
+canvas.addEventListener('keydown',e=>{
+ const k=e.key.toLowerCase(),dirs={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};
+ if(dirs[k]){e.preventDefault();move(...dirs[k]);}else if(['e',' ','enter'].includes(k)){e.preventDefault();state.started?interact():start();}else if(k==='i'){e.preventDefault();inspect();}
+});
+canvas.addEventListener('pointerdown',e=>{canvas.focus();if(!state.started||state.ending)return;const r=canvas.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)*640/r.width/32),y=Math.floor(((e.clientY-r.top)*400/r.height-48)/32);const o=nearby().find(o=>o.x===x&&o.y===y);if(o)interact(o.id);else if(Math.abs(x-state.x)+Math.abs(y-state.y)===1)move(x-state.x,y-state.y);});
+const reading=document.getElementById('reading');
+for(const [key,value]of Object.entries(TEXT)){const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=value;reading.appendChild(p);}
+const walkthrough=document.createElement('p');walkthrough.textContent='Walkthrough: Take the left tray letter to the tide on the strand. Take the middle tray letter to the lighthouse lamp. Take the right tray letter north from the strand to the echo. Return for the final middle-tray letter. Open it at the tide or send it through the red postbox. Taking another tray letter safely swaps your pocket. The first three can be delivered in either available order; the echo path opens after the tide delivery.';reading.appendChild(walkthrough);
+window.LastPost={get state(){return state;},rooms,walkable,nearby,objects,move,interact,inspect,start,reset,draw,TEXT};
+reset();
+
+</script></body></html>
